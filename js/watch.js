@@ -1,34 +1,78 @@
 const params = new URLSearchParams(location.search);
 const slug = params.get('slug') || '';
 let debugData = {};
+let servers = [];
 
-function extractDownloads(d) {
-  const candidates = ['download', 'downloads', 'download_url', 'downloadLinks', 'mirror', 'mirrors'];
+function getStreamServers(d) {
+  if (d.streaming && Array.isArray(d.streaming.servers)) {
+    return d.streaming.servers.map(s => ({ name: pick(s, ['name'], 'Server'), url: pick(s, ['url']) }));
+  }
+  const candidates = ['servers', 'server_list', 'streaming_servers'];
   for (const key of candidates) {
-    if (Array.isArray(d[key])) return d[key];
-    if (d[key] && typeof d[key] === 'object') {
-      // e.g. { "360p": [...], "480p": [...] } or { "360p": "url" }
-      const out = [];
-      for (const [quality, val] of Object.entries(d[key])) {
-        if (Array.isArray(val)) {
-          val.forEach(v => out.push({ quality, ...(typeof v === 'object' ? v : { url: v }) }));
-        } else if (typeof val === 'string') {
-          out.push({ quality, url: val });
-        }
-      }
-      if (out.length) return out;
+    if (Array.isArray(d[key])) {
+      return d[key].map(s => ({ name: pick(s, ['name', 'label'], 'Server'), url: pick(s, ['url', 'link']) }));
     }
   }
   return [];
 }
 
-async function load() {
+function getMainStreamUrl(d) {
+  if (d.streaming && d.streaming.main_url && d.streaming.main_url.url) return d.streaming.main_url.url;
+  if (servers.length) return servers[0].url;
+  return pick(d, ['stream_url', 'streamUrl', 'embed', 'embed_url', 'player', 'video_url', 'videoUrl']);
+}
+
+function getDownloadGroups(d) {
+  const dl = d.download_url || d.download || d.downloads;
+  const groups = [];
+  if (dl && typeof dl === 'object' && !Array.isArray(dl)) {
+    for (const [quality, providers] of Object.entries(dl)) {
+      if (providers && typeof providers === 'object' && !Array.isArray(providers)) {
+        const links = Object.entries(providers).map(([provider, url]) => ({ provider, url }));
+        groups.push({ quality: quality.replace(/^mp4_/i, '').toUpperCase(), links });
+      } else if (typeof providers === 'string') {
+        groups.push({ quality: quality.replace(/^mp4_/i, '').toUpperCase(), links: [{ provider: 'Download', url: providers }] });
+      }
+    }
+  }
+  return groups;
+}
+
+function renderPlayer(url) {
   const playerArea = document.getElementById('playerArea');
+  if (!url) {
+    playerArea.innerHTML = '<div class="state-msg">Link streaming tidak ditemukan.</div>';
+    return;
+  }
+  if (url.match(/\.(mp4|m3u8)(\?|$)/i)) {
+    playerArea.innerHTML = `<div class="player-wrap"><video src="${url}" controls autoplay playsinline></video></div>`;
+  } else {
+    playerArea.innerHTML = `<div class="player-wrap"><iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media"></iframe></div>`;
+  }
+}
+
+function renderServerList() {
+  const wrap = document.getElementById('serverList');
+  if (!wrap) return;
+  if (!servers.length) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = servers.map((s, i) => `
+    <button class="server-btn ${i === 0 ? 'active' : ''}" data-index="${i}">${s.name}</button>
+  `).join('');
+  wrap.querySelectorAll('.server-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      wrap.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderPlayer(servers[parseInt(btn.dataset.index)].url);
+    });
+  });
+}
+
+async function load() {
   const downloadList = document.getElementById('downloadList');
   const epInfo = document.getElementById('epInfo');
 
   if (!slug) {
-    playerArea.innerHTML = '<div class="state-msg">Slug episode tidak ditemukan.</div>';
+    document.getElementById('playerArea').innerHTML = '<div class="state-msg">Slug episode tidak ditemukan.</div>';
     return;
   }
 
@@ -37,33 +81,38 @@ async function load() {
     debugData = json;
     const d = json.data !== undefined ? json.data : json;
 
-    const title = getTitle(d);
-    const streamUrl = pick(d, ['stream_url', 'streamUrl', 'embed', 'embed_url', 'player', 'video_url', 'videoUrl']);
+    const title = pick(d, ['title', 'episode'], 'Episode');
+    epInfo.innerHTML = `<div class="page-title" style="font-size:16px; padding-top:10px;">${title}</div>`;
 
-    epInfo.innerHTML = `<div class="page-title" style="font-size:16px; padding-top:10px;">${title || 'Episode'}</div>`;
+    servers = getStreamServers(d);
+    renderServerList();
+    renderPlayer(getMainStreamUrl(d));
 
-    if (streamUrl) {
-      if (streamUrl.match(/\.(mp4|m3u8)(\?|$)/i)) {
-        playerArea.innerHTML = `<div class="player-wrap"><video src="${streamUrl}" controls autoplay playsinline></video></div>`;
-      } else {
-        playerArea.innerHTML = `<div class="player-wrap"><iframe src="${streamUrl}" allowfullscreen allow="autoplay; encrypted-media"></iframe></div>`;
-      }
-    } else {
-      playerArea.innerHTML = '<div class="state-msg">Link streaming tidak ditemukan di response API. Cek Debug JSON di bawah untuk lihat field yang tersedia, lalu tambahin nama field-nya di js/watch.js.</div>';
-    }
-
-    const downloads = extractDownloads(d);
-    if (downloads.length === 0) {
+    const groups = getDownloadGroups(d);
+    if (groups.length === 0) {
       downloadList.innerHTML = '<div class="state-msg">Tidak ada link download.</div>';
     } else {
-      downloadList.innerHTML = downloads.map(dl => {
-        const label = pick(dl, ['quality', 'resolution', 'label'], 'Download');
-        const url = pick(dl, ['url', 'link', 'href']);
-        return `<a class="download-item" href="${url}" target="_blank" rel="noopener">${label}</a>`;
-      }).join('');
+      downloadList.innerHTML = groups.map(g => `
+        <div class="dl-quality-label">${g.quality}</div>
+        <div class="dl-provider-row">
+          ${g.links.map(l => `<a class="download-item" href="${l.url}" target="_blank" rel="noopener">${l.provider}</a>`).join('')}
+        </div>
+      `).join('');
+    }
+
+    if (d.donghua_details) {
+      const parentTitle = pick(d.donghua_details, ['title'], '');
+      const parentSlug = pick(d.donghua_details, ['slug'], '');
+      if (parentTitle && parentSlug) {
+        epInfo.insertAdjacentHTML('beforeend', `
+          <div style="padding:0 16px 10px;">
+            <a class="back-btn" style="margin:0;" href="detail.html?slug=${encodeURIComponent(parentSlug)}&type=donghua">Lihat semua episode ${parentTitle}</a>
+          </div>
+        `);
+      }
     }
   } catch (err) {
-    playerArea.innerHTML = `<div class="state-msg">Gagal memuat: ${err.message}</div>`;
+    document.getElementById('playerArea').innerHTML = `<div class="state-msg">Gagal memuat: ${err.message}</div>`;
   }
 }
 
