@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jadwal Rilis - iFilm</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brand"><span class="brand-icon">▶</span> iFilm</div>
+    <div class="top-icons">
+      <button id="searchToggle">🔍</button>
+      <button>🔔</button>
+    </div>
+  </div>
+
+  <div class="search-wrap" id="searchWrap">
+    <form id="searchForm" style="display:flex; flex:1; gap:8px;">
+      <input id="searchInput" type="text" placeholder="Cari donghua / anime...">
+      <button type="submit">CARI</button>
+    </form>
+  </div>
+
+  <div class="page-title">Jadwal Rilis</div>
+
+  <div class="tabs-row">
+    <button class="tab-btn active" data-mode="donghua">DONGHUA</button>
+    <button class="tab-btn" data-mode="anime">ANIME</button>
+  </div>
+
+  <div class="day-tabs">
+    <button class="day-btn active" data-day="senin">SENIN</button>
+    <button class="day-btn" data-day="selasa">SELASA</button>
+    <button class="day-btn" data-day="rabu">RABU</button>
+    <button class="day-btn" data-day="kamis">KAMIS</button>
+    <button class="day-btn" data-day="jumat">JUMAT</button>
+    <button class="day-btn" data-day="sabtu">SABTU</button>
+    <button class="day-btn" data-day="minggu">MINGGU</button>
+  </div>
+
+  <div id="scheduleList"></div>
+
+  <div class="debug-toggle" id="debugToggle">Debug JSON</div>
+  <div class="debug-box" id="debugBox"></div>
+
+  <div class="bottomnav">
+    <a href="index.html"><span class="icon">🏠</span>Beranda</a>
+    <a href="schedule.html" class="active"><span class="icon">📅</span>Jadwal</a>
+    <a href="#"><span class="icon">💬</span>Forum</a>
+    <a href="#"><span class="icon">📖</span>Wiki</a>
+    <a href="#"><span class="icon">👤</span>Profil</a>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script src="js/schedule.js"></script>
+</body>
+</html>
