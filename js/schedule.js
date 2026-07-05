@@ -8,10 +8,15 @@ const dayAliases = {
   selasa: ['selasa', 'tuesday', 'tue'],
   rabu: ['rabu', 'wednesday', 'wed'],
   kamis: ['kamis', 'thursday', 'thu'],
-  jumat: ['jumat', "jum'at", 'friday', 'fri'],
+  jumat: ['jumat', 'friday', 'fri'],
   sabtu: ['sabtu', 'saturday', 'sat'],
   minggu: ['minggu', 'sunday', 'sun']
 };
+
+// Buang tanda kutip/apostrof macam-macam (' ' ` `) biar "jum'at" == "jumat"
+function normalizeDay(str) {
+  return (str || '').toString().toLowerCase().replace(/['\u2019\u2018`]/g, '');
+}
 
 async function getScheduleData(mode) {
   if (cache[mode]) return cache[mode];
@@ -33,20 +38,27 @@ function findDayItems(json, day) {
         if (Array.isArray(d[k])) return d[k];
       }
     }
-    // maybe nested one level deeper (e.g. d.schedule.Senin)
-    for (const k of keys) {
-      if (d[k] && typeof d[k] === 'object' && !Array.isArray(d[k])) {
-        const innerKeys = Object.keys(d[k]);
-        for (const ik of innerKeys) {
-          if (aliases.includes(ik.toLowerCase()) && Array.isArray(d[k][ik])) {
-            return d[k][ik];
-          }
-        }
-      }
+  }
+
+  // Case 2: real API shape -> { schedule: [ { day: "senin", donghua_list: [...] }, ... ] }
+  const scheduleArr = (d && Array.isArray(d.schedule)) ? d.schedule
+    : (Array.isArray(d) ? d : null);
+  if (scheduleArr) {
+    const match = scheduleArr.find(entry => {
+      const dayVal = normalizeDay(pick(entry, ['day', 'hari', 'release_day', 'releaseDay'], ''));
+      return aliases.some(a => dayVal === a || dayVal.includes(a));
+    });
+    if (match) {
+      const nestedKey = ['donghua_list', 'anime_list', 'list', 'items', 'anime', 'donghua']
+        .find(k => Array.isArray(match[k]));
+      if (nestedKey) return match[nestedKey];
+      // if the matched entry itself has no obvious nested array, fall back to any array inside it
+      const anyArr = Object.values(match).find(v => Array.isArray(v));
+      if (anyArr) return anyArr;
     }
   }
 
-  // Case 2: flat array with a day/hari field on each item
+  // Case 3: flat array with a day/hari field directly on each item
   const list = extractList(json);
   const filtered = list.filter(item => {
     const dayVal = pick(item, ['day', 'hari', 'release_day', 'releaseDay'], '').toString().toLowerCase();
