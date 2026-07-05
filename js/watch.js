@@ -1,5 +1,6 @@
 const params = new URLSearchParams(location.search);
 const slug = params.get('slug') || '';
+const type = params.get('type') || 'donghua';
 let debugData = {};
 let servers = [];
 
@@ -77,7 +78,7 @@ async function load() {
   }
 
   try {
-    const json = await apiGet(`/api/episode?slug=${encodeURIComponent(slug)}`);
+    const json = await apiGet(`/api/episode?slug=${encodeURIComponent(slug)}&type=${encodeURIComponent(type)}`);
     debugData = json;
     const d = json.data !== undefined ? json.data : json;
 
@@ -106,7 +107,7 @@ async function load() {
       if (parentTitle && parentSlug) {
         epInfo.insertAdjacentHTML('beforeend', `
           <div style="padding:0 16px 10px;">
-            <a class="back-btn" style="margin:0;" href="detail.html?slug=${encodeURIComponent(parentSlug)}&type=donghua">Lihat semua episode ${parentTitle}</a>
+            <a class="back-btn" style="margin:0;" href="detail.html?slug=${encodeURIComponent(parentSlug)}&type=${encodeURIComponent(type)}">Lihat semua episode ${parentTitle}</a>
           </div>
         `);
       }
