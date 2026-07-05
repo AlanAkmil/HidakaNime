@@ -4,5 +4,6 @@
     "api/**/*.js": {
       "maxDuration": 15
     }
-  }
+  },
+  "regions": ["sin1"]
 }
