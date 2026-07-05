@@ -80,7 +80,7 @@ async function load() {
   try {
     const json = await apiGet(`/api/episode?slug=${encodeURIComponent(slug)}&type=${encodeURIComponent(type)}`);
     debugData = json;
-    const d = json.data !== undefined ? json.data : json;
+    const d = unwrapData(json);
 
     const title = pick(d, ['title', 'episode'], 'Episode');
     epInfo.innerHTML = `<div class="page-title" style="font-size:16px; padding-top:10px;">${title}</div>`;
