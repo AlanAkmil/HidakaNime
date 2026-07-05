@@ -40,8 +40,9 @@ function findDayItems(json, day) {
     }
   }
 
-  // Case 2: real API shape -> { schedule: [ { day: "senin", donghua_list: [...] }, ... ] }
-  const scheduleArr = (d && Array.isArray(d.schedule)) ? d.schedule
+  // Case 2: real API shape -> { schedule: [ {day, donghua_list} ] } ATAU { data: [ {day, items} ] }
+  const scheduleArr = Array.isArray(d && d.schedule) ? d.schedule
+    : Array.isArray(d && d.data) ? d.data
     : (Array.isArray(d) ? d : null);
   if (scheduleArr) {
     const match = scheduleArr.find(entry => {
