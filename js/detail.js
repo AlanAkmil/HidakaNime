@@ -4,7 +4,7 @@ const type = params.get('type') || 'donghua';
 let debugData = {};
 
 function extractEpisodeList(json) {
-  const d = json.data !== undefined ? json.data : json;
+  const d = unwrapData(json);
   const candidates = ['episodes_list', 'episode_list', 'episodeList', 'episodes', 'list_episode', 'listEpisode', 'daftar_episode'];
   for (const key of candidates) {
     if (d && Array.isArray(d[key])) return d[key];
@@ -30,7 +30,7 @@ async function load() {
   try {
     const json = await apiGet(`/api/detail?slug=${encodeURIComponent(slug)}&type=${encodeURIComponent(type)}`);
     debugData = json;
-    let d = json.data !== undefined ? json.data : json;
+    let d = unwrapData(json);
     // beberapa endpoint (mis. hasil /episode) nyimpen info utama di dalam donghua_details
     const info = d.donghua_details || d.anime_details || d;
 
