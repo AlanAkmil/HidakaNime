@@ -28,7 +28,7 @@ async function load() {
     return;
   }
   try {
-    const json = await apiGet(`/api/detail?slug=${encodeURIComponent(slug)}`);
+    const json = await apiGet(`/api/detail?slug=${encodeURIComponent(slug)}&type=${encodeURIComponent(type)}`);
     debugData = json;
     let d = json.data !== undefined ? json.data : json;
     // beberapa endpoint (mis. hasil /episode) nyimpen info utama di dalam donghua_details
@@ -46,7 +46,11 @@ async function load() {
         <div class="detail-info">
           <h1>${title}</h1>
           <div class="meta">Status: ${status}</div>
-          ${genre ? `<div class="meta">Genre: ${Array.isArray(genre) ? genre.join(', ') : genre}</div>` : ''}
+          ${genre && (Array.isArray(genre) ? genre.length : genre) ? `<div class="meta">Genre: ${
+        Array.isArray(genre)
+          ? genre.map(g => (typeof g === 'object' ? pick(g, ['name'], '') : g)).filter(Boolean).join(', ')
+          : genre
+      }</div>` : ''}
         </div>
       </div>
       <div class="detail-synopsis">${synopsis}</div>
@@ -61,7 +65,7 @@ async function load() {
       const epTitle = pick(ep, ['title', 'episode', 'name'], 'Episode');
       const epSlug = getSlug(ep) || pick(ep, ['slug', 'href', 'link', 'url']);
       return `
-        <div class="ep-item" onclick="location.href='watch.html?slug=${encodeURIComponent(epSlug)}'">
+        <div class="ep-item" onclick="location.href='watch.html?slug=${encodeURIComponent(epSlug)}&type=${encodeURIComponent(type)}'">
           <span>${epTitle}</span>
           <span>▶</span>
         </div>
