@@ -5,7 +5,7 @@ let debugData = {};
 
 function extractEpisodeList(json) {
   const d = json.data !== undefined ? json.data : json;
-  const candidates = ['episode_list', 'episodeList', 'episodes', 'list_episode', 'listEpisode', 'daftar_episode'];
+  const candidates = ['episodes_list', 'episode_list', 'episodeList', 'episodes', 'list_episode', 'listEpisode', 'daftar_episode'];
   for (const key of candidates) {
     if (d && Array.isArray(d[key])) return d[key];
   }
@@ -30,13 +30,15 @@ async function load() {
   try {
     const json = await apiGet(`/api/detail?slug=${encodeURIComponent(slug)}`);
     debugData = json;
-    const d = json.data !== undefined ? json.data : json;
+    let d = json.data !== undefined ? json.data : json;
+    // beberapa endpoint (mis. hasil /episode) nyimpen info utama di dalam donghua_details
+    const info = d.donghua_details || d.anime_details || d;
 
-    const title = getTitle(d);
-    const poster = getImage(d);
-    const synopsis = pick(d, ['synopsis', 'sinopsis', 'description', 'desc'], 'Sinopsis tidak tersedia.');
-    const status = getStatus(d);
-    const genre = pick(d, ['genre', 'genres', 'category'], '');
+    const title = getTitle(info);
+    const poster = getImage(info);
+    const synopsis = pick(info, ['synopsis', 'sinopsis', 'description', 'desc'], 'Sinopsis tidak tersedia.');
+    const status = getStatus(info);
+    const genre = pick(info, ['genre', 'genres', 'category'], '');
 
     content.innerHTML = `
       <div class="detail-hero">
