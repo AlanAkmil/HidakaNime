@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nonton - iFilm</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brand"><span class="brand-icon">▶</span> iFilm</div>
+  </div>
+
+  <a class="back-btn" href="javascript:history.back()">← Kembali</a>
+
+  <div id="playerArea">
+    <div class="state-msg">Memuat video...</div>
+  </div>
+
+  <div id="epInfo"></div>
+
+  <div class="ep-list-title">DOWNLOAD</div>
+  <div class="download-list" id="downloadList"></div>
+
+  <div class="debug-toggle" id="debugToggle">Debug JSON</div>
+  <div class="debug-box" id="debugBox"></div>
+
+  <div class="bottomnav">
+    <a href="index.html"><span class="icon">🏠</span>Beranda</a>
+    <a href="schedule.html"><span class="icon">📅</span>Jadwal</a>
+    <a href="#"><span class="icon">💬</span>Forum</a>
+    <a href="#"><span class="icon">📖</span>Wiki</a>
+    <a href="#"><span class="icon">👤</span>Profil</a>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script src="js/watch.js"></script>
+</body>
+</html>
