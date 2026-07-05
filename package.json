@@ -1,0 +1,10 @@
+{
+  "name": "ifilm-lengkap",
+  "version": "1.0.0",
+  "description": "Web clone iFilm (Donghua & Anime) - scraper by Bintang, UI neo-brutalism",
+  "main": "lib/scraper.js",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "license": "MIT"
+}
