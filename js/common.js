@@ -6,6 +6,15 @@
 // buat liat struktur asli, lalu tambahin nama field ke array di bawah.
 // ============================================================
 
+// Beberapa endpoint (anime/detail, anime/episode) bungkus datanya 2 lapis: json.data.data
+function unwrapData(json) {
+  let d = json.data !== undefined ? json.data : json;
+  if (d && d.data !== undefined && typeof d.data === 'object' && !Array.isArray(d.data)) {
+    d = d.data;
+  }
+  return d;
+}
+
 function pick(obj, keys, fallback = '') {
   if (!obj) return fallback;
   for (const k of keys) {
