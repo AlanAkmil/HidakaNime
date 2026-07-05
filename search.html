@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cari - iFilm</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brand"><span class="brand-icon">▶</span> iFilm</div>
+    <div class="top-icons">
+      <button id="searchToggle">🔍</button>
+    </div>
+  </div>
+
+  <div class="search-wrap active" id="searchWrap">
+    <form id="searchForm" style="display:flex; flex:1; gap:8px;">
+      <input id="searchInput" type="text" placeholder="Cari donghua / anime...">
+      <button type="submit">CARI</button>
+    </form>
+  </div>
+
+  <div class="page-title" id="resultTitle">Hasil Pencarian</div>
+
+  <div class="grid" id="resultGrid"></div>
+  <div class="load-more-wrap">
+    <button class="btn-block" id="moreBtn" style="display:none;">MUAT LEBIH BANYAK</button>
+  </div>
+
+  <div class="debug-toggle" id="debugToggle">Debug JSON</div>
+  <div class="debug-box" id="debugBox"></div>
+
+  <div class="bottomnav">
+    <a href="index.html"><span class="icon">🏠</span>Beranda</a>
+    <a href="schedule.html"><span class="icon">📅</span>Jadwal</a>
+    <a href="#"><span class="icon">💬</span>Forum</a>
+    <a href="#"><span class="icon">📖</span>Wiki</a>
+    <a href="#"><span class="icon">👤</span>Profil</a>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script src="js/search.js"></script>
+</body>
+</html>
