@@ -81,9 +81,12 @@ function renderList(items) {
     const img = getImage(item);
     const slug = getSlug(item);
     const type = currentMode;
+    const thumb = img
+      ? `<img src="${img}" alt="">`
+      : `<div class="list-row-placeholder">▶</div>`;
     return `
       <div class="list-row" onclick="location.href='detail.html?slug=${encodeURIComponent(slug)}&type=${type}'">
-        <img src="${img}" alt="">
+        ${thumb}
         <div class="list-title">${title}</div>
         <div class="chevron">›</div>
       </div>
