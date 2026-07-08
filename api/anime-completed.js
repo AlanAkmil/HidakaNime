@@ -1,10 +1,8 @@
-const IFILMScraper = require('../lib/scraper');
+const kusonime = require('../lib/kusonime');
 module.exports = async (req, res) => {
   try {
-    const { page } = req.query;
-    const scraper = new IFILMScraper();
-    const result = await scraper.getAnimeCompleted(parseInt(page) || 1);
-    res.status(200).json(result);
+    const data = await kusonime.latest();
+    res.status(200).json({ success: true, data });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
