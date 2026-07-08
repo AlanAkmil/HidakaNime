@@ -88,6 +88,26 @@ function cardHTML(item, type) {
   `;
 }
 
+// Kartu khusus buat data anime dari kusonime (struktur beda dari donghua)
+function animeCardHTML(item) {
+  const title = item.title || 'Tanpa Judul';
+  const img = item.thumb || '';
+  const released = item.released || '';
+  const genreTxt = Array.isArray(item.genre) ? item.genre.slice(0, 2).join(', ') : '';
+  const slugParam = encodeURIComponent(item.url || '');
+  return `
+    <div class="card" onclick="location.href='detail.html?slug=${slugParam}&type=anime'">
+      <div class="card-thumb" style="background-image:url('${img}')">
+        ${released ? `<span class="badge badge-ep">${released}</span>` : ''}
+      </div>
+      <div class="card-body">
+        <div class="card-title">${title}</div>
+        <div class="card-cat">${genreTxt || 'Anime'}</div>
+      </div>
+    </div>
+  `;
+}
+
 async function apiGet(path) {
   const res = await fetch(path);
   const json = await res.json();
