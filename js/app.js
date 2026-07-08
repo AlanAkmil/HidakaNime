@@ -29,17 +29,15 @@ async function loadAnime() {
   const btn = document.getElementById('animeMore');
   btn.textContent = 'MEMUAT...';
   try {
-    const json = await apiGet(`/api/anime-ongoing?page=${animePage}`);
+    const json = await apiGet(`/api/anime-ongoing`);
     lastDebug.anime = json;
     const items = extractList(json);
-    if (items.length === 0 && animePage === 1) {
+    if (items.length === 0) {
       grid.innerHTML = '<div class="state-msg">Belum ada data anime.</div>';
-      btn.style.display = 'none';
-      return;
+    } else {
+      items.forEach(item => grid.insertAdjacentHTML('beforeend', animeCardHTML(item)));
     }
-    items.forEach(item => grid.insertAdjacentHTML('beforeend', cardHTML(item, 'anime')));
-    animePage++;
-    btn.textContent = 'MUAT LEBIH BANYAK ANIME';
+    btn.style.display = 'none'; // kusonime cuma nampilin listing terbaru, gak ada halaman berikutnya
   } catch (err) {
     grid.insertAdjacentHTML('beforeend', `<div class="state-msg">Gagal memuat: ${err.message}</div>`);
     btn.style.display = 'none';
