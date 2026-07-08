@@ -3,6 +3,51 @@ const slug = params.get('slug') || '';
 const type = params.get('type') || 'donghua';
 let debugData = {};
 
+function renderAnimeDetail(json) {
+  const content = document.getElementById('detailContent');
+  const epList = document.getElementById('episodeList');
+  const d = json.data || {};
+  const meta = d.metadata || {};
+  const info = meta.info || {};
+  const genres = info.genres || [];
+
+  const title = meta.title || 'Tanpa Judul';
+  const poster = meta.poster_url || '';
+  const synopsis = meta.sinopsis || 'Sinopsis tidak tersedia.';
+
+  content.innerHTML = `
+    <div class="detail-hero">
+      <img class="detail-poster" src="${poster}" alt="">
+      <div class="detail-info">
+        <h1>${title}</h1>
+        ${info.status ? `<div class="meta">Status: ${info.status}</div>` : ''}
+        ${genres.length ? `<div class="meta">Genre: ${genres.join(', ')}</div>` : ''}
+      </div>
+    </div>
+    <div class="detail-synopsis">${synopsis}</div>
+  `;
+
+  const epListTitle = document.querySelector('.ep-list-title');
+  if (epListTitle) epListTitle.textContent = 'DOWNLOAD';
+
+  const batches = d.download || [];
+  if (batches.length === 0) {
+    epList.innerHTML = '<div class="state-msg">Tidak ada link download.</div>';
+    return;
+  }
+  epList.innerHTML = batches.map(batch => `
+    <div class="dl-quality-label" style="padding-left:16px;">${batch.title}</div>
+    ${Object.entries(batch.resolutions).map(([quality, links]) => `
+      <div class="ep-item" style="display:block; cursor:default;">
+        <div style="font-weight:800; margin-bottom:8px;">${quality}</div>
+        <div class="dl-provider-row">
+          ${links.map(l => `<a class="download-item" href="${l.url}" target="_blank" rel="noopener">${l.provider}</a>`).join('')}
+        </div>
+      </div>
+    `).join('')}
+  `).join('');
+}
+
 function extractEpisodeList(json) {
   const d = unwrapData(json);
   const candidates = ['episodes_list', 'episode_list', 'episodeList', 'episodes', 'list_episode', 'listEpisode', 'daftar_episode'];
@@ -30,6 +75,12 @@ async function load() {
   try {
     const json = await apiGet(`/api/detail?slug=${encodeURIComponent(slug)}&type=${encodeURIComponent(type)}`);
     debugData = json;
+
+    if (type === 'anime') {
+      renderAnimeDetail(json);
+      return;
+    }
+
     let d = unwrapData(json);
     // beberapa endpoint (mis. hasil /episode) nyimpen info utama di dalam donghua_details
     const info = d.donghua_details || d.anime_details || d;
